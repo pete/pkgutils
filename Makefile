@@ -24,7 +24,7 @@ BINDIR = /usr/bin
 MANDIR = /usr/man
 ETCDIR = /etc
 
-VERSION = 5.21
+VERSION = 5.22
 LIBTAR_VERSION = 1.2.11
 
 CXXFLAGS += -DNDEBUG

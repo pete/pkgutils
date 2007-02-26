@@ -1,3 +1,7 @@
+5.22    - Released 2007-02-26
+        - Updated pkgadd.conf for udev rules (Johannes Winkelmann)
+
+
 5.21    - Released 2006-11-15
         - pkgmk now writes warnings and errors to stderr instead of
           stdout (Tilman Sauerbeck)
