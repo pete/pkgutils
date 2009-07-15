@@ -75,6 +75,13 @@ check_directory() {
 	fi
 }
 
+check_file() {
+	if [ -e $1 ] && [ ! -w $1 ]; then
+		error "File '$1' is not writable."
+		exit 1
+	fi
+}
+
 download_file() {
 	info "Downloading '$1'."
 
@@ -347,6 +354,7 @@ remove_work_dir() {
 build_package() {
 	local BUILD_SUCCESSFUL="no"
 	
+	check_file "$TARGET"
 	make_work_dir
 
 	if [ "$UID" != "0" ]; then
@@ -458,6 +466,7 @@ update_footprint() {
 		exit 1
 	fi
 	
+	check_file "$PKGMK_FOOTPRINT"
 	make_footprint > $PKGMK_FOOTPRINT
 	touch $TARGET
 	
@@ -612,6 +621,7 @@ main() {
 	
 	if [ "$PKGMK_UPDATE_MD5SUM" = "yes" ]; then
 		download_source
+		check_file "$PKGMK_MD5SUM"
 		make_md5sum > $PKGMK_MD5SUM
 		info "Md5sum updated."
 		exit 0
