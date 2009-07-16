@@ -163,7 +163,7 @@ unpack_source() {
 		LOCAL_FILENAME=`get_filename $FILE`
 		case $LOCAL_FILENAME in
 			*.tar.gz|*.tar.Z|*.tgz|*.tar.bz2|*.tar.xz|*.zip)
-				COMMAND="bsdtar -C $SRC -xf $LOCAL_FILENAME" ;;
+				COMMAND="bsdtar -p -o -C $SRC -xf $LOCAL_FILENAME" ;;
 			*)
 				COMMAND="cp $LOCAL_FILENAME $SRC" ;;
 		esac
