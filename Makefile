@@ -32,7 +32,9 @@ CXXFLAGS += -DNDEBUG
 CXXFLAGS += -O2 -Wall -pedantic -D_GNU_SOURCE -DVERSION=\"$(VERSION)\" \
 	    -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
-LDFLAGS += -static -larchive -lz
+LIBARCHIVELIBS := $(shell pkg-config --libs --static libarchive)
+
+LDFLAGS += -static $(LIBARCHIVELIBS)
 
 OBJECTS = main.o pkgutil.o pkgadd.o pkgrm.o pkginfo.o
 
