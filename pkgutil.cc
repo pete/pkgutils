@@ -45,6 +45,8 @@
 
 #define INIT_ARCHIVE(ar) \
 	archive_read_support_compression_gzip((ar)); \
+	archive_read_support_compression_bzip2((ar)); \
+	archive_read_support_compression_xz((ar)); \
 	archive_read_support_format_tar((ar))
 
 using __gnu_cxx::stdio_filebuf;
