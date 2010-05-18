@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#define PKG_EXT         ".pkg.tar.gz"
+#define PKG_EXT         ".pkg.tar."
 #define PKG_DIR         "var/lib/pkg"
 #define PKG_DB          "var/lib/pkg/db"
 #define PKG_REJECTED    "var/lib/pkg/rejected"
