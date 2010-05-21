@@ -353,6 +353,7 @@ remove_work_dir() {
 
 build_package() {
 	local BUILD_SUCCESSFUL="no"
+	local COMPRESSION
 	
 	check_file "$TARGET"
 	make_work_dir
@@ -377,8 +378,14 @@ build_package() {
 		
 		cd $PKG
 		info "Build result:"
-		tar czvvf $TARGET *
-		
+
+		case $PKGMK_COMPRESSION_MODE in
+			gz)  COMPRESSION="-z" ;;
+			bz2) COMPRESSION="-j" ;;
+			xz)  COMPRESSION="-J" ;;
+		esac
+		bsdtar -c $COMPRESSION -f $TARGET *  &&  bsdtar -t -v -f $TARGET
+
 		if [ $? = 0 ]; then
 			BUILD_SUCCESSFUL="yes"
 
@@ -606,9 +613,17 @@ main() {
 	check_directory "`dirname $PKGMK_WORK_DIR`"
 	
 	check_pkgfile
-	
-	TARGET="$PKGMK_PACKAGE_DIR/$name#$version-$release.pkg.tar.gz"
-	
+
+	case $PKGMK_COMPRESSION_MODE in
+		gz|bz2|xz)
+			TARGET="$PKGMK_PACKAGE_DIR/$name#$version-$release.pkg.tar.$PKGMK_COMPRESSION_MODE"
+			;;
+		*)
+			error "Compression mode '$PKGMK_COMPRESSION_MODE' not supported"
+			exit 1
+			;;
+	esac
+
 	if [ "$PKGMK_CLEAN" = "yes" ]; then
 		clean
 		exit 0
@@ -681,6 +696,8 @@ PKGMK_SOURCE_MIRRORS=()
 PKGMK_SOURCE_DIR="$PWD"
 PKGMK_PACKAGE_DIR="$PWD"
 PKGMK_WORK_DIR="$PWD/work"
+
+PKGMK_COMPRESSION_MODE="gz"
 
 PKGMK_INSTALL="no"
 PKGMK_RECURSIVE="no"
