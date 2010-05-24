@@ -5,7 +5,7 @@ pkgmk \- make software package
 \fBpkgmk [options]\fP
 .SH DESCRIPTION
 \fBpkgmk\fP is a \fIpackage management\fP utility, which makes
-a software package. A \fIpackage\fP is an archive of files (.pkg.tar.gz)
+a software package. A \fIpackage\fP is an archive of files (.pkg.tar.gz, .pkg.tar.bz2 or .pkg.tar.xz)
 that can be installed using pkgadd(8).
 
 To prepare to use pkgmk, you must write a file named \fIPkgfile\fP
