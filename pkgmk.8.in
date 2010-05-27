@@ -88,6 +88,37 @@ Global package make configuration.
 .TP
 .B "wget"
 Used by pkgmk to download source code.
+.SH EXIT CODES
+.TP
+.B 0
+No error occured.
+.TP
+.B 1
+A general error has occured.
+.TP
+.B 2
+The Pkgfile is invalid.
+.TP
+.B 3
+The source or build directory is missing or is lacking read/write permissions.
+.TP
+.B 4
+An error occured during the download of source files.
+.TP
+.B 5
+An error occured during unpacking of source files.
+.TP
+.B 6
+An md5sum mismatch occured.
+.TP
+.B 7
+A footprint mismatch occured.
+.TP
+.B 8
+An error occured while running the build function.
+.TP
+.B 9
+An error occured while installing the package via pkgadd.
 .SH SEE ALSO
 pkgmk.conf(5), pkgadd(8), pkgrm(8), pkginfo(8), rejmerge(8), wget(1)
 .SH COPYRIGHT

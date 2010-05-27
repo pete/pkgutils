@@ -21,6 +21,18 @@
 #  USA.
 #
 
+##
+# error codes
+E_GENERAL=1
+E_PKGFILE=2    # invalid Pkgfile
+E_DIR_PERM=3   # (source/build) directory missing or missing read/write permission
+E_DOWNLOAD=4   # error during download
+E_UNPACK=5     # error during unpacking of source file(s)
+E_MD5=6        # md5sum verification failed
+E_FOOTPRINT=7  # footprint check failure
+E_BUILD=8      # error while running 'build()'
+E_INSTALL=9    # error while installing the package via 'pkgadd'
+
 info() {
 	echo "=======> $1"
 }
@@ -49,29 +61,29 @@ get_basename() {
 check_pkgfile() {
 	if [ ! "$name" ]; then
 		error "Variable 'name' not specified in $PKGMK_PKGFILE."
-		exit 1
+		exit $E_PKGFILE
 	elif [ ! "$version" ]; then
 		error "Variable 'version' not specified in $PKGMK_PKGFILE."
-		exit 1
+		exit $E_PKGFILE
 	elif [ ! "$release" ]; then
 		error "Variable 'release' not specified in $PKGMK_PKGFILE."
-		exit 1
+		exit $E_PKGFILE
 	elif [ "`type -t build`" != "function" ]; then
 		error "Function 'build' not specified in $PKGMK_PKGFILE."
-		exit 1
+		exit $E_PKGFILE
 	fi
 }
 
 check_directory() {
 	if [ ! -d $1 ]; then
 		error "Directory '$1' does not exist."
-		exit 1
+		exit $E_DIR_PERM
 	elif [ ! -w $1 ]; then
 		error "Directory '$1' not writable."
-		exit 1
+		exit $E_DIR_PERM
 	elif [ ! -x $1 ] || [ ! -r $1 ]; then
 		error "Directory '$1' not readable."
-		exit 1
+		exit $E_DIR_PERM
 	fi
 }
 
@@ -87,7 +99,7 @@ download_file() {
 
 	if [ ! "`type -p wget`" ]; then
 		error "Command 'wget' not found."
-		exit 1
+		exit $E_GENERAL
 	fi
 
 	LOCAL_FILENAME=`get_filename $1`
@@ -129,7 +141,7 @@ download_file() {
 	
 	if [ $error != 0 ]; then
 		error "Downloading '$1' failed."
-		exit 1
+		exit $E_DOWNLOAD
 	fi
 	
 	mv -f "$LOCAL_FILENAME_PARTIAL" "$LOCAL_FILENAME"
@@ -143,13 +155,13 @@ download_source() {
 		if [ ! -e $LOCAL_FILENAME ]; then
 			if [ "$LOCAL_FILENAME" = "$FILE" ]; then
 				error "Source file '$LOCAL_FILENAME' not found (can not be downloaded, URL not specified)."
-				exit 1
+				exit $E_DOWNLOAD
 			else
 				if [ "$PKGMK_DOWNLOAD" = "yes" ]; then
 					download_file $FILE
 				else
 					error "Source file '$LOCAL_FILENAME' not found (use option -d to download)."
-					exit 1
+					exit $E_DOWNLOAD
 				fi
 			fi
 		fi
@@ -177,7 +189,7 @@ unpack_source() {
 				rm -rf $PKGMK_WORK_DIR
 			fi
 			error "Building '$TARGET' failed."
-			exit 1
+			exit $E_UNPACK
 		fi
 	done
 }
@@ -224,11 +236,11 @@ check_md5sum() {
 
 			if [ "$PKGMK_CHECK_MD5SUM" = "yes" ]; then
 				error "Md5sum not ok."
-				exit 1
+				exit $E_MD5
 			fi
 
 			error "Building '$TARGET' failed."
-			exit 1
+			exit $E_MD5
 		fi
 	else
 		if [ "$PKGMK_CHECK_MD5SUM" = "yes" ]; then
@@ -236,7 +248,7 @@ check_md5sum() {
 				rm -rf $PKGMK_WORK_DIR
 			fi
 			info "Md5sum not found."
-			exit 1
+			exit $E_MD5
 		fi
 		
 		warning "Md5sum not found, creating new."
