@@ -53,6 +53,11 @@ If set to 'yes', pkgmk will not perform a footprint check of the built package.
 .br
 Default: 'no'
 .TP
+\fBPKGMK_IGNORE_NEW='STRING'\fP
+If set to 'yes', pkgmk will ignore new files in a footprint mismatch.
+.br
+Default: 'no'
+.TP
 \fBPKGMK_NO_STRIP='STRING'\fP
 If set to 'no', pkgmk will strip built binaries.
 .br
