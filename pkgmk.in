@@ -264,6 +264,15 @@ check_md5sum() {
 	fi
 }
 
+retain_old_libs() {
+	local old_libs lib
+	old_libs="$(pkginfo -l $name | egrep '\.so(\.[0-9])*')"
+	for lib in $old_libs; do
+		echo mkdir -p $PKG/$(dirname $lib)
+		echo cp -nP /$lib $PKG/$lib
+	done
+}
+
 strip_files() {
 	local FILE FILTER
 	
@@ -387,6 +396,10 @@ build_package() {
 	(set -e -x ; build)
 	
 	if [ $? = 0 ]; then
+		if [ "$PKGMK_RETAIN_OLD_LIBS" = "yes" ]; then
+			retain_old_libs
+		fi
+
 		if [ "$PKGMK_NO_STRIP" = "no" ]; then
 			strip_files
 		fi
