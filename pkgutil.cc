@@ -44,10 +44,12 @@
 #include <archive_entry.h>
 
 #define INIT_ARCHIVE(ar) \
-	archive_read_support_compression_gzip((ar)); \
-	archive_read_support_compression_bzip2((ar)); \
-	archive_read_support_compression_xz((ar)); \
+	archive_read_support_filter_gzip((ar)); \
+	archive_read_support_filter_bzip2((ar)); \
+	archive_read_support_filter_xz((ar)); \
 	archive_read_support_format_tar((ar))
+
+#define DEFAULT_BYTES_PER_BLOCK (20 * 512)
 
 using __gnu_cxx::stdio_filebuf;
 
@@ -352,8 +354,8 @@ pair<string, pkgutil::pkginfo_t> pkgutil::pkg_open(const string& filename) const
 	INIT_ARCHIVE(archive);
 
 	if (archive_read_open_filename(archive,
-	    const_cast<char*>(filename.c_str()),
-	    ARCHIVE_DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
+	    filename.c_str(),
+	    DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
 		throw runtime_error_with_errno("could not open " + filename, archive_errno(archive));
 
 	for (i = 0; archive_read_next_header(archive, &entry) ==
@@ -376,7 +378,7 @@ pair<string, pkgutil::pkginfo_t> pkgutil::pkg_open(const string& filename) const
 			throw runtime_error("could not read " + filename);
 	}
 
-	archive_read_finish(archive);
+	archive_read_free(archive);
 
 	return result;
 }
@@ -393,8 +395,8 @@ void pkgutil::pkg_install(const string& filename, const set<string>& keep_list, 
 	INIT_ARCHIVE(archive);
 
 	if (archive_read_open_filename(archive,
-	    const_cast<char*>(filename.c_str()),
-	    ARCHIVE_DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
+	    filename.c_str(),
+	    DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
 		throw runtime_error_with_errno("could not open " + filename, archive_errno(archive));
 
 	chdir(root.c_str());
@@ -467,7 +469,7 @@ void pkgutil::pkg_install(const string& filename, const set<string>& keep_list, 
 			throw runtime_error("could not read " + filename);
 	}
 
-	archive_read_finish(archive);
+	archive_read_free(archive);
 }
 
 void pkgutil::ldconfig() const
@@ -509,8 +511,8 @@ void pkgutil::pkg_footprint(string& filename) const
 	INIT_ARCHIVE(archive);
 
 	if (archive_read_open_filename(archive,
-	    const_cast<char*>(filename.c_str()),
-	    ARCHIVE_DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
+	    filename.c_str(),
+	    DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
                 throw runtime_error_with_errno("could not open " + filename, archive_errno(archive));
 
 	for (i = 0; archive_read_next_header(archive, &entry) ==
@@ -528,7 +530,7 @@ void pkgutil::pkg_footprint(string& filename) const
 			throw runtime_error_with_errno("could not read " + filename, archive_errno(archive));
 	}
 
-	archive_read_finish(archive);
+	archive_read_free(archive);
 
 	// Too bad, there doesn't seem to be a way to reuse our archive
 	// instance
@@ -536,8 +538,8 @@ void pkgutil::pkg_footprint(string& filename) const
 	INIT_ARCHIVE(archive);
 
 	if (archive_read_open_filename(archive,
-	    const_cast<char*>(filename.c_str()),
-	    ARCHIVE_DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
+	    filename.c_str(),
+	    DEFAULT_BYTES_PER_BLOCK) != ARCHIVE_OK)
                 throw runtime_error_with_errno("could not open " + filename, archive_errno(archive));
 
 	for (i = 0; archive_read_next_header(archive, &entry) ==
@@ -610,7 +612,7 @@ void pkgutil::pkg_footprint(string& filename) const
 			throw runtime_error("could not read " + filename);
 	}
 
-	archive_read_finish(archive);
+	archive_read_free(archive);
 }
 
 void pkgutil::print_version() const
