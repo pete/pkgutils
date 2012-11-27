@@ -611,6 +611,12 @@ parse_options() {
 }
 
 main() {
+	# multilib
+	PKGMK_ARCH=64
+	if [ -f ".32bit" ]; then
+		PKGMK_ARCH=32
+	fi
+
 	local FILE TARGET
 	
 	parse_options "$@"
