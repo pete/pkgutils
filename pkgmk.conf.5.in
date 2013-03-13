@@ -19,6 +19,11 @@ Set C++ compiler options.
 .br
 Default: none
 .TP
+\fBexport MAKEFLAGS='STRING'\fP
+Set make options.
+.br
+Default: none
+.TP
 \fBPKGMK_SOURCE_MIRRORS=('STRING')\fP
 Set mirrors to check and download source archives from.
 .br
