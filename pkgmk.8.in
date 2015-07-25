@@ -86,6 +86,9 @@ MD5 checksum of source files.
 .B "/etc/pkgmk.conf"
 Global package make configuration.
 .TP
+.B "curl"
+Used by pkgmk to download source code.
+.TP
 .B "wget"
 Used by pkgmk to download source code.
 .SH EXIT CODES
@@ -120,7 +123,7 @@ An error occured while running the build function.
 .B 9
 An error occured while installing the package via pkgadd.
 .SH SEE ALSO
-pkgmk.conf(5), pkgadd(8), pkgrm(8), pkginfo(8), rejmerge(8), wget(1)
+pkgmk.conf(5), pkgadd(8), pkgrm(8), pkginfo(8), rejmerge(8), curl(1), wget(1)
 .SH COPYRIGHT
 pkgmk (pkgutils) is Copyright (c) 2000-2005 Per Liden and Copyright (c) 2006-2013 CRUX team (http://crux.nu).
 pkgmk (pkgutils) is licensed through the GNU General Public License.

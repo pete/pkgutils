@@ -97,20 +97,32 @@ check_file() {
 download_file() {
 	info "Downloading '$1'."
 
-	if [ ! "`type -p wget`" ]; then
-		error "Command 'wget' not found."
+	PKGMK_DOWNLOAD_PROG=${PKGMK_DOWNLOAD_PROG:-wget}
+	if [ ! "`type -p ${PKGMK_DOWNLOAD_PROG}`" ]; then
+		error "Command '${PKGMK_DOWNLOAD_PROG}' not found."
 		exit $E_GENERAL
 	fi
 
 	LOCAL_FILENAME=`get_filename $1`
 	LOCAL_FILENAME_PARTIAL="$LOCAL_FILENAME.partial"
-	DOWNLOAD_OPTS="--passive-ftp --no-directories --tries=3 --waitretry=3 \
-		--directory-prefix=$PKGMK_SOURCE_DIR \
-		--output-document=$LOCAL_FILENAME_PARTIAL --no-check-certificate"
+	
+	case ${PKGMK_DOWNLOAD_PROG} in
+		curl)
+			RESUME_CMD="-C -"
+			DOWNLOAD_OPTS="-L --fail --ftp-pasv --retry 3 --retry-delay 3 \
+			-o $LOCAL_FILENAME_PARTIAL --insecure $PKGMK_CURL_OPTS"
+			;;
+		wget)
+			RESUME_CMD="-c"
+			DOWNLOAD_OPTS="--passive-ftp --no-directories --tries=3 --waitretry=3 \
+			--directory-prefix=$PKGMK_SOURCE_DIR \
+			--output-document=$LOCAL_FILENAME_PARTIAL --no-check-certificate $PKGMK_WGET_OPTS"
+			;;
+	esac
 
 	if [ -f "$LOCAL_FILENAME_PARTIAL" ]; then
 		info "Partial download found, trying to resume"
-		RESUME_CMD="-c"
+		RESUME_OPTS="$RESUME_CMD"
 	fi
 
 	error=1
@@ -118,7 +130,7 @@ download_file() {
 	BASENAME=`get_basename $1`
 	for REPO in ${PKGMK_SOURCE_MIRRORS[@]}; do
 		REPO="`echo $REPO | sed 's|/$||'`"
-		wget $RESUME_CMD $DOWNLOAD_OPTS $PKGMK_WGET_OPTS $REPO/$BASENAME
+		$PKGMK_DOWNLOAD_PROG $DOWNLOAD_OPTS $RESUME_OPTS $REPO/$BASENAME
 		error=$?
 		if [ $error == 0 ]; then
 			break
@@ -127,19 +139,19 @@ download_file() {
 
 	if [ $error != 0 ]; then
 		while true; do
-			wget $RESUME_CMD $DOWNLOAD_OPTS $PKGMK_WGET_OPTS $1
+			$PKGMK_DOWNLOAD_PROG $DOWNLOAD_OPTS $RESUME_OPTS $1
 			error=$?
-			if [ $error != 0 ] && [ "$RESUME_CMD" ]; then
+			if [ $error != 0 ] && [ "$RESUME_OPTS" ]; then
 				info "Partial download failed, restarting"
 				rm -f "$LOCAL_FILENAME_PARTIAL"
-				RESUME_CMD=""
+				RESUME_OPTS=""
 			else
 				break
 			fi
 		done
 	fi
 	
-	if [ $error != 0 ]; then
+	if [ $error != 0 -o ! -f "$LOCAL_FILENAME_PARTIAL" ]; then
 		error "Downloading '$1' failed."
 		exit $E_DOWNLOAD
 	fi
