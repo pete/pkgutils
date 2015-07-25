@@ -72,7 +72,7 @@ dist: distclean
 	rm -rf $(NAME) $(NAME).tar.gz
 	git archive --format=tar --prefix=$(NAME)/ HEAD | tar -x
 	git log > $(NAME)/ChangeLog
-	tar czvf $(NAME).tar.gz $(NAME)
+	tar cJvf $(NAME).tar.xz $(NAME)
 	rm -rf $(NAME)
 
 install: all
