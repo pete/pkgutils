@@ -22,7 +22,7 @@
 
 DESTDIR =
 BINDIR = /usr/bin
-MANDIR = /usr/man
+MANDIR = /usr/share/man
 ETCDIR = /etc
 
 VERSION = 5.36
