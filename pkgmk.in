@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 #  pkgutils
 # 
@@ -734,8 +734,8 @@ parse_options() {
 				PKGMK_IGNORE_MD5SUM="yes" ;;
 			-cm|--check-md5sum)
 				PKGMK_CHECK_MD5SUM="yes" ;;
-            -us|--update-signature)
-                PKGMK_UPDATE_SIGNATURE="yes" ;;
+      -us|--update-signature)
+        PKGMK_UPDATE_SIGNATURE="yes" ;;
       -cs|--check-signature)
         PKGMK_CHECK_SIGNATURE="yes" ;;
       -is|--ignore-signature)
