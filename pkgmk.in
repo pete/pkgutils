@@ -47,20 +47,20 @@ error() {
 }
 
 get_filename() {
-  local ABSOLUTE=""
-  if [ "$1" = "-a" ]; then
-    ABSOLUTE=1
-    shift
-  fi
+	local ABSOLUTE=""
+	if [ "$1" = "-a" ]; then
+		ABSOLUTE=1
+		shift
+	fi
 
 	if [[ $1 =~ ^(http|https|ftp|file)://.*/(.+) ]]; then
 		echo "$PKGMK_SOURCE_DIR/${BASH_REMATCH[2]}"
 	else
-    if [ "$ABSOLUTE" ]; then
-      echo $PKGMK_ROOT/$1
-    else
-      echo $1
-    fi
+		if [ "$ABSOLUTE" ]; then
+			echo $PKGMK_ROOT/$1
+		else
+			echo $1
+		fi
 	fi
 }
 
@@ -121,7 +121,7 @@ download_file() {
 		curl)
 			RESUME_CMD="-C -"
 			DOWNLOAD_OPTS="-L --fail --ftp-pasv --retry 3 --retry-delay 3 \
-			-o $LOCAL_FILENAME_PARTIAL --insecure $PKGMK_CURL_OPTS"
+			-o $LOCAL_FILENAME_PARTIAL $PKGMK_CURL_OPTS"
 			;;
 		wget)
 			RESUME_CMD="-c"
@@ -289,36 +289,36 @@ check_md5sum() {
 
 check_signature() {
 	local FILE="$PKGMK_WORK_DIR/.tmp"
-  local RESULT=0
-  local PUBKEY=""
+	local RESULT=0
+	local PUBKEY=""
 
-  cd $PKGMK_ROOT
+	cd $PKGMK_ROOT
 
 	if [ -f $PKGMK_SIGNATURE ]; then
-    cd $SRC
-    if [ "$source" ]; then
-      for FILE in ${source[@]} Pkgfile .footprint; do
-        ln -s $(get_filename -a $FILE) .
-      done
-    fi
+		cd $SRC
+		if [ "$source" ]; then
+			for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
+				ln -s $(get_filename -a $FILE) .
+			done
+		fi
 
-    if [ "$PKGMK_PUBLICKEY" ]; then
-      err=$(signify -q -C -p "$PKGMK_PUBLICKEY" -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
-    else
-      err=$(signify -q -C -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
-    fi
+		if [ "$PKGMK_PUBLICKEY" ]; then
+			err=$(signify -q -C -p "$PKGMK_PUBLICKEY" -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
+		else
+			err=$(signify -q -C -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
+		fi
 
-    RESULT=$?
-	  cd $PKGMK_ROOT
-     
-    if [ $RESULT -ne 0 ]; then
+		RESULT=$?
+		cd $PKGMK_ROOT
+		 
+		if [ $RESULT -ne 0 ]; then
 
-      if [ "$err" = "signify: signature verification failed" ]; then
-        error "Failed verifying cryptographic digest"
-      else
-        error "Signature mismatch found:"
-        echo "$err" | while read n; do echo 'MISMATCH  '${n%%:*}; done
-      fi
+			if [ "$err" = "signify: signature verification failed" ]; then
+				error "Failed verifying cryptographic digest"
+			else
+				error "Signature mismatch found:"
+				echo "$err" | while read n; do echo 'MISMATCH	'${n%%:*}; done
+			fi
 
 			if [ "$PKGMK_KEEP_WORK" = "no" ]; then
 				rm -rf $PKGMK_WORK_DIR
@@ -348,63 +348,63 @@ check_signature() {
 		exit 0
 	fi
 
-  # remove hard links
-  find $SRC -maxdepth 1 -mindepth 1 -type l -delete
+	# remove soft links
+	find $SRC -maxdepth 1 -mindepth 1 -type l -delete
 }
 
 make_signature() {
 	local FILE LOCAL_FILENAMES
-  local REPO
+	local REPO
 	
 	if [ "$source" ]; then
-		for FILE in ${source[@]} Pkgfile .footprint; do
+		for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
 			LOCAL_FILENAMES="$LOCAL_FILENAMES `get_filename $FILE`"
 		done
 
-    if [ ! "$PKGMK_PRIVATEKEY" ]; then
-      REPO=${PWD%/*}
-      REPO=${REPO##*/}
-      REPO=${REPO%.git}
-    fi
+		if [ ! "$PKGMK_PRIVATEKEY" ]; then
+			REPO=${PWD%/*}
+			REPO=${REPO##*/}
+			REPO=${REPO%.git}
+		fi
 		
-    if [ "$REPO" ]; then
-      PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
-    fi
+		if [ "$REPO" ]; then
+			PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
+		fi
 
-    sha256sum --tag $LOCAL_FILENAMES | sed 's|^SHA256 (.*/\(.*\))\(.* = .*\)|SHA256 (\1)\2|' | \
-    signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
+		sha256sum --tag $LOCAL_FILENAMES | sed 's|^SHA256 (.*/\(.*\))\(.* = .*\)|SHA256 (\1)\2|' | \
+		signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
 
-    if [ $? -ne 0 ]; then
-      rm ${PKGMK_SIGNATURE}.tmp
-      error "Creating signature failed"
-      exit $E_SIGNATURE
-    else
-      mv ${PKGMK_SIGNATURE}.tmp ${PKGMK_SIGNATURE}
-    fi
+		if [ $? -ne 0 ]; then
+			rm ${PKGMK_SIGNATURE}.tmp
+			error "Creating signature failed"
+			exit $E_SIGNATURE
+		else
+			mv ${PKGMK_SIGNATURE}.tmp ${PKGMK_SIGNATURE}
+		fi
 	fi
 }
 
 refresh_signature() {
-    if [ ! "$PKGMK_PRIVATEKEY" ]; then
-      REPO=${PWD%/*}
-      REPO=${REPO##*/}
-      REPO=${REPO%.git}
-    fi
+		if [ ! "$PKGMK_PRIVATEKEY" ]; then
+			REPO=${PWD%/*}
+			REPO=${REPO##*/}
+			REPO=${REPO%.git}
+		fi
 		
-    if [ "$REPO" ]; then
-      PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
-    fi
+		if [ "$REPO" ]; then
+			PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
+		fi
 
-    tail -n +3 ${PKGMK_SIGNATURE} | \
-    signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
+		tail -n +3 ${PKGMK_SIGNATURE} | \
+		signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
 
-    if [ $? -ne 0 ]; then
-      rm ${PKGMK_SIGNATURE}.tmp
-      error "Refreshing signature failed"
-      exit $E_SIGNATURE
-    else
-      mv ${PKGMK_SIGNATURE}.tmp ${PKGMK_SIGNATURE}
-    fi
+		if [ $? -ne 0 ]; then
+			rm ${PKGMK_SIGNATURE}.tmp
+			error "Refreshing signature failed"
+			exit $E_SIGNATURE
+		else
+			mv ${PKGMK_SIGNATURE}.tmp ${PKGMK_SIGNATURE}
+		fi
 }
 
 strip_files() {
@@ -505,7 +505,7 @@ make_work_dir() {
 		check_md5sum
 	fi
 	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ]; then
-    test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
+		test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
 		check_signature
 	fi
 }
@@ -531,7 +531,7 @@ build_package() {
 	unpack_source
 	
 	cd $SRC
-	(set -e -x ; build > /dev/null)
+	(set -e -x ; build)
 	
 	if [ $? = 0 ]; then
 		if [ "$PKGMK_NO_STRIP" = "no" ]; then
@@ -692,7 +692,7 @@ print_help() {
 	echo "  -us,  --update-signature    update signature including sha256 checksums"
 	echo "  -cs,  --check-signature     check the validity of the port files"
 	echo "  -is,  --ignore-signature    build package without checking the signature"
-	echo "  -rs,  --refresh-signature   create new signature, for existing sha256 checksums"
+	echo "  -rs,  --refresh-signature   create new signature and keep existing sha256 checksums"
 	echo "  -sk,  --secret-key <file>   use <file> to sign the port"
 	echo "  -pk,  --public-key <file>   check the port siganture using public-key <file>"
 	echo "  -ns,  --no-strip            do not strip executable binaries or libraries"
@@ -734,14 +734,14 @@ parse_options() {
 				PKGMK_IGNORE_MD5SUM="yes" ;;
 			-cm|--check-md5sum)
 				PKGMK_CHECK_MD5SUM="yes" ;;
-      -us|--update-signature)
-        PKGMK_UPDATE_SIGNATURE="yes" ;;
-      -cs|--check-signature)
-        PKGMK_CHECK_SIGNATURE="yes" ;;
-      -is|--ignore-signature)
-        PKGMK_IGNORE_SIGNATURE="yes" ;;
-      -rs|--referesh-signature)
-        PKGMK_REFRESH_SIGNATURE="yes" ;;
+			-us|--update-signature)
+				PKGMK_UPDATE_SIGNATURE="yes" ;;
+			-cs|--check-signature)
+				PKGMK_CHECK_SIGNATURE="yes" ;;
+			-is|--ignore-signature)
+				PKGMK_IGNORE_SIGNATURE="yes" ;;
+			-rs|--referesh-signature)
+				PKGMK_REFRESH_SIGNATURE="yes" ;;
 			-ns|--no-strip)
 				PKGMK_NO_STRIP="yes" ;;
 			-f|--force)
@@ -757,7 +757,7 @@ parse_options() {
 				fi
 				PKGMK_PUBLICKEY="$2"
 				shift ;;
-      -sk|--secret-key)
+			-sk|--secret-key)
 				if [ ! "$2" ]; then
 					echo "`basename $PKGMK_COMMAND`: option $1 requires an argument"
 					exit 1
