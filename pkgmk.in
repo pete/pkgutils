@@ -292,6 +292,12 @@ check_signature() {
 	local RESULT=0
 	local PUBKEY=""
 
+	# fall back to m5sums if no signature is available
+	if [ ! -e "$PKGMK_ROOT/$PKGMK_SIGNATURE" ] && [ "$PKGMK_IGNORE_MD5SUM" = "no" ]; then
+		warning "Falling back to old md5sum checking."
+		return 0;
+	fi
+
 	cd $PKGMK_ROOT
 
 	if [ -f $PKGMK_SIGNATURE ]; then
@@ -501,12 +507,12 @@ make_work_dir() {
 	remove_work_dir
 	mkdir -p $SRC $PKG
 
-	if [ "$PKGMK_IGNORE_MD5SUM" = "no" ]; then
-		check_md5sum
-	fi
 	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ]; then
 		test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
 		check_signature
+	fi
+	if [ "$PKGMK_IGNORE_MD5SUM" = "no" ]; then
+		check_md5sum
 	fi
 }
 
