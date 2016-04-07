@@ -849,20 +849,20 @@ main() {
 		exit 0
 	fi
 	
-  if [ "$PKGMK_UPDATE_SIGNATURE" = "yes" ]; then
-    download_source
-    check_file "$PKGMK_SIGNATURE"
-    make_signature
-    info "Signature updated."
-    exit 0
-  fi
+	if [ "$PKGMK_UPDATE_SIGNATURE" = "yes" ]; then
+		download_source
+		check_file "$PKGMK_SIGNATURE"
+		make_signature
+		info "Signature updated."
+		exit 0
+	fi
 
-  if [ "$PKGMK_REFRESH_SIGNATURE" = "yes" ]; then
-    check_file "$PKGMK_SIGNATURE"
-    refresh_signature
-    info "Signature refreshed."
-    exit 0
-  fi
+	if [ "$PKGMK_REFRESH_SIGNATURE" = "yes" ]; then
+		check_file "$PKGMK_SIGNATURE"
+		refresh_signature
+		info "Signature refreshed."
+		exit 0
+	fi
 
 	if [ "$PKGMK_DOWNLOAD_ONLY" = "yes" ]; then
 		download_source
