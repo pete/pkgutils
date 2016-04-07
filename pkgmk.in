@@ -3,7 +3,7 @@
 #  pkgutils
 # 
 #  Copyright (c) 2000-2005 Per Liden
-#  Copyright (c) 2006-2016 by CRUX team (http://crux.nu)
+#  Copyright (c) 2006-2013 by CRUX team (http://crux.nu)
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -287,20 +287,12 @@ check_md5sum() {
 	fi
 }
 
+# requires a previous call of make_work_dir()
 check_signature() {
-	local FILE="$PKGMK_WORK_DIR/.tmp"
 	local RESULT=0
 	local PUBKEY=""
 
-	# fall back to m5sums if no signature is available
-	if [ ! -e "$PKGMK_ROOT/$PKGMK_SIGNATURE" ] && [ "$PKGMK_IGNORE_MD5SUM" = "no" ]; then
-		warning "Falling back to old md5sum checking."
-		return 0;
-	fi
-
-	cd $PKGMK_ROOT
-
-	if [ -f $PKGMK_SIGNATURE ]; then
+	if [ -f $PKGMK_ROOT/$PKGMK_SIGNATURE ]; then
 		cd $SRC
 		if [ "$source" ]; then
 			for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
@@ -332,8 +324,15 @@ check_signature() {
 
 			error "Building '$TARGET' failed."
 			exit $E_SIGNATURE
+    #else
+      #info "Signature verification succeeded."
 		fi
 	else
+    if [ "$PKGMK_IGNORE_MD5SUM" = "no" ] && [ "$PKGMK_CHECK_SIGNATURE" = "no" ]; then
+      warning "Signature file not found, falling back to old md5sum checking."
+      return 0;
+    fi
+
 		if [ "$PKGMK_CHECK_SIGNATURE" = "yes" ]; then
 			if [ "$PKGMK_KEEP_WORK" = "no" ]; then
 				rm -rf $PKGMK_WORK_DIR
@@ -343,6 +342,7 @@ check_signature() {
 		fi
 
 		warning "Signature not found, creating new."
+		cd $PKGMK_ROOT
 		make_signature
 	fi
 
@@ -507,7 +507,7 @@ make_work_dir() {
 	remove_work_dir
 	mkdir -p $SRC $PKG
 
-	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ]; then
+	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ] || [ "$PKGMK_CHECK_SIGNATURE" = "yes" ]; then
 		test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
 		check_signature
 	fi
@@ -886,7 +886,7 @@ main() {
 		exit 0
 	fi
 	
-	if [ "`build_needed`" = "no" ] && [ "$PKGMK_FORCE" = "no" ] && [ "$PKGMK_CHECK_MD5SUM" = "no" ]; then
+	if [ "`build_needed`" = "no" ] && [ "$PKGMK_FORCE" = "no" ] && [ "$PKGMK_CHECK_MD5SUM" = "no" ] && [ "$PKGMK_CHECK_SIGNATURE" = "no" ]; then
 		info "Package '$TARGET' is up to date."
 	else
 		download_source
