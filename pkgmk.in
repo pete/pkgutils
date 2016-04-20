@@ -239,7 +239,7 @@ check_md5sum() {
 	local FILE="$PKGMK_WORK_DIR/.tmp"
 
 	cd $PKGMK_ROOT
-	
+
 	if [ -f $PKGMK_MD5SUM ]; then
 		make_md5sum > $FILE.md5sum
 		sort -k 2 $PKGMK_MD5SUM > $FILE.md5sum.orig
@@ -308,7 +308,7 @@ check_signature() {
 
 		RESULT=$?
 		cd $PKGMK_ROOT
-		 
+
 		if [ $RESULT -ne 0 ]; then
 
 			if [ "$err" = "signify: signature verification failed" ]; then
@@ -361,7 +361,7 @@ check_signature() {
 make_signature() {
 	local FILE LOCAL_FILENAMES
 	local REPO
-	
+
 	if [ "$source" ]; then
 		for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
 			LOCAL_FILENAMES="$LOCAL_FILENAMES `get_filename $FILE`"
@@ -372,7 +372,7 @@ make_signature() {
 			REPO=${REPO##*/}
 			REPO=${REPO%.git}
 		fi
-		
+
 		if [ "$REPO" ]; then
 			PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
 		fi
@@ -396,7 +396,7 @@ refresh_signature() {
 			REPO=${REPO##*/}
 			REPO=${REPO%.git}
 		fi
-		
+
 		if [ "$REPO" ]; then
 			PKGMK_PRIVATEKEY="/etc/ports/${REPO}.sec"
 		fi

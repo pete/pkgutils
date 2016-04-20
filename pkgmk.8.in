@@ -52,6 +52,27 @@ Update md5sum using the current source files.
 .B "\-im, \-\-ignore\-md5sum"
 Build package without checking md5sum first.
 .TP
+.B "\-cm, \-\-check\-md5sum"
+Check md5sum without building the package.
+.TP
+.B "\-us, \-\-update\-signature"
+Update port signature and sha256sums.
+.TP
+.B "\-cs, \-\-check\-signature"
+Check the validity of files using the signature and sha256sums.
+.TP
+.B "\-is, \-\-ignore\-signature"
+Build package without checking the signature and sha256sums.
+.TP
+.B "\-rs, \-\-refresh\-signature"
+Create new signature and keep existing sha256sums.
+.TP
+.B "\-sk, \-\-secret\-key <file>"
+Use private key in <file> to sign the port. By default, the name of the port's parent directory 'repo' is evaluated and /etc/ports/$repo.sec is used as the private key, if it exists.
+.TP
+.B "\-pk, \-\-public\-key <file>"
+Use public key in <file to check the signature. By default, the name of the port's parent directory 'repo' is evaluated and /etc/ports/$repo.pub is used as the public key, if it exists.
+.TP
 .B "\-ns, \-\-no\-strip"
 Do not strip executable binaries or libraries.
 .TP
