@@ -68,10 +68,12 @@ Build package without checking the signature and sha256sums.
 Create new signature and keep existing sha256sums.
 .TP
 .B "\-sk, \-\-secret\-key <file>"
-Use private key in <file> to sign the port. By default, the name of the port's parent directory 'repo' is evaluated and /etc/ports/$repo.sec is used as the private key, if it exists.
+Use private key in <file> to sign the port. By default, the name of the port's
+parent directory $repo is evaluated and the private key is read from /etc/ports/$repo.sec, if it exists.
 .TP
 .B "\-pk, \-\-public\-key <file>"
-Use public key in <file to check the signature. By default, the name of the port's parent directory 'repo' is evaluated and /etc/ports/$repo.pub is used as the public key, if it exists.
+Use public key in <file> to check the signature. By default, the name of the
+port's parent directory $repo is evaluated and the public key is read from /etc/ports/$repo.pub, if it exists.
 .TP
 .B "\-ns, \-\-no\-strip"
 Do not strip executable binaries or libraries.
