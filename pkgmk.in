@@ -700,7 +700,7 @@ print_help() {
 	echo "  -is,  --ignore-signature    build package without checking the signature"
 	echo "  -rs,  --refresh-signature   create new signature and keep existing sha256 checksums"
 	echo "  -sk,  --secret-key <file>   use <file> to sign the port"
-	echo "  -pk,  --public-key <file>   check the port siganture using public-key <file>"
+	echo "  -pk,  --public-key <file>   check the port signature using public-key <file>"
 	echo "  -ns,  --no-strip            do not strip executable binaries or libraries"
 	echo "  -f,   --force               build package even if it appears to be up to date"
 	echo "  -c,   --clean               remove package and downloaded files"
