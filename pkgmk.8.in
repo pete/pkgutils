@@ -106,6 +106,9 @@ Package footprint (used for regression testing).
 .B ".md5sum"
 MD5 checksum of source files.
 .TP
+.B ".signature"
+SHA256 checksum and signify checksum.
+.TP
 .B "/etc/pkgmk.conf"
 Global package make configuration.
 .TP
@@ -146,7 +149,7 @@ An error occured while running the build function.
 .B 9
 An error occured while installing the package via pkgadd.
 .SH SEE ALSO
-pkgmk.conf(5), pkgadd(8), pkgrm(8), pkginfo(8), rejmerge(8), curl(1), wget(1)
+pkgmk.conf(5), pkgadd(8), pkgrm(8), pkginfo(8), rejmerge(8), signify(1), curl(1), wget(1)
 .SH COPYRIGHT
 pkgmk (pkgutils) is Copyright (c) 2000-2005 Per Liden and Copyright (c) 2006-2017 CRUX team (http://crux.nu).
 pkgmk (pkgutils) is licensed through the GNU General Public License.
