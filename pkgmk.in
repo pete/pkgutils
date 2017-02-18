@@ -426,10 +426,10 @@ strip_files() {
 
 	find . -type f -printf "%P\n" | $FILTER | while read FILE; do
 		case $(file -b "$FILE") in
-		*ELF*executable*not\ stripped,*)
+		*ELF*executable*not\ stripped*)
 			strip --strip-all "$FILE"
 			;;
-		*ELF*shared\ object*not\ stripped,*)
+		*ELF*shared\ object*not\ stripped*)
 			strip --strip-unneeded "$FILE"
 			;;
 		current\ ar\ archive)
