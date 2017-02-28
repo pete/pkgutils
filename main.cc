@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	string name = basename(argv[0]);
 
 	try {
-		auto_ptr<pkgutil> util(select_utility(name));
+		unique_ptr<pkgutil> util(select_utility(name));
 
 		// Handle common options
 		for (int i = 1; i < argc; i++) {
