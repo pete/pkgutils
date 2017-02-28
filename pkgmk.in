@@ -294,11 +294,9 @@ check_signature() {
 
 	if [ -f $PKGMK_ROOT/$PKGMK_SIGNATURE ]; then
 		cd $SRC
-		if [ "$source" ]; then
-			for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
-				ln -s $(get_filename -a $FILE) .
-			done
-		fi
+		for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
+			ln -s $(get_filename -a $FILE) .
+		done
 
 		if [ "$PKGMK_PUBLICKEY" ]; then
 			err=$(signify -q -C -p "$PKGMK_PUBLICKEY" -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
