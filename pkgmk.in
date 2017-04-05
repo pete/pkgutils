@@ -327,7 +327,7 @@ check_signature() {
 	else
 		if [ "$PKGMK_IGNORE_MD5SUM" = "no" ] && [ "$PKGMK_CHECK_SIGNATURE" = "no" ]; then
 			warning "Signature file not found, falling back to old md5sum checking."
-			return 0;
+			return 1;
 		fi
 		if [ "$PKGMK_CHECK_SIGNATURE" = "yes" ]; then
 			if [ "$PKGMK_KEEP_WORK" = "no" ]; then
@@ -352,6 +352,7 @@ check_signature() {
 
 	# remove soft links
 	find $SRC -maxdepth 1 -mindepth 1 -type l -delete
+	return 0
 }
 
 make_signature() {
@@ -503,7 +504,10 @@ make_work_dir() {
 
 	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ] || [ "$PKGMK_CHECK_SIGNATURE" = "yes" ]; then
 		test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
-		check_signature
+		if check_signature
+		then
+			return 0
+		fi
 	fi
 	if [ "$PKGMK_IGNORE_MD5SUM" = "no" ]; then
 		check_md5sum
