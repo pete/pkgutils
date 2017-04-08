@@ -504,7 +504,7 @@ make_work_dir() {
 
 	if [ "$PKGMK_IGNORE_SIGNATURE" = "no" ] || [ "$PKGMK_CHECK_SIGNATURE" = "yes" ]; then
 		test -f $PKGMK_SIGNATURE && cp $PKGMK_SIGNATURE $PKGMK_WORK_DIR
-		if check_signature
+		if check_signature && test ! -f $PKGMK_MD5SUM
 		then
 			return 0
 		fi
