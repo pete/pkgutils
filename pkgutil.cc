@@ -383,7 +383,7 @@ pair<string, pkgutil::pkginfo_t> pkgutil::pkg_open(const string& filename) const
 	return result;
 }
 
-void pkgutil::pkg_install(const string& filename, const set<string>& keep_list, const set<string>& non_install_list) const
+void pkgutil::pkg_install(const string& filename, const set<string>& keep_list, const set<string>& non_install_list, bool upgrade) const
 {
 	struct archive* archive;
 	struct archive_entry* entry;
@@ -435,9 +435,12 @@ void pkgutil::pkg_install(const string& filename, const set<string>& keep_list, 
 
 		if (archive_read_extract(archive, entry, flags) != ARCHIVE_OK) {
 			// If a file fails to install we just print an error message and
-			// continue trying to install the rest of the package.
+			// continue trying to install the rest of the package,
+			// unless this is not an upgrade.
 			const char* msg = archive_error_string(archive);
 			cerr << utilname << ": could not install " + archive_filename << ": " << msg << endl;
+			if (!upgrade)
+				throw runtime_error("extract error: " + archive_filename + ": " + msg);
 			continue;
 		}
 

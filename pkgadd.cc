@@ -103,7 +103,15 @@ void pkgadd::run(int argc, char** argv)
    
 		db_add_pkg(package.first, package.second);
 		db_commit();
-		pkg_install(o_package, keep_list, non_install_files);
+		try {
+			pkg_install(o_package, keep_list, non_install_files, installed);
+		} catch (runtime_error&) {
+			if (!installed) {
+				db_rm_pkg(package.first);
+				db_commit();
+				throw runtime_error("failed");
+			}
+		}
 		ldconfig();
 	}
 }
