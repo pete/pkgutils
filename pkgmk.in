@@ -656,7 +656,7 @@ build_needed() {
 		RESULT="no"
 		for FILE in $PKGMK_PKGFILE ${source[@]}; do
 			FILE=`get_filename $FILE`
-			if [ ! -e $FILE ] || [ ! $TARGET -nt $FILE ]; then
+			if [ -e $FILE ] && [ ! $TARGET -nt $FILE ]; then
 				RESULT="yes"
 				break
 			fi
