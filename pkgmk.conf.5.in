@@ -19,6 +19,11 @@ Set C++ compiler options.
 .br
 Default: none
 .TP
+\fBexport JOBS='NUMBER'\fP
+Set the number of commands to run simultaneously when building a port.
+.br
+Default: none
+.TP
 \fBexport MAKEFLAGS='STRING'\fP
 Set make options.
 .br
