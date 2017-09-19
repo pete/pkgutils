@@ -33,7 +33,6 @@ void pkgadd::run(int argc, char** argv)
 	// Check command line options
 	//
 	string o_root;
-	string o_config;
 	string o_package;
 	bool o_upgrade = false;
 	bool o_force = false;
@@ -43,10 +42,6 @@ void pkgadd::run(int argc, char** argv)
 		if (option == "-r" || option == "--root") {
 			assert_argument(argv, argc, i);
 			o_root = argv[i + 1];
-			i++;
-		} else if (option == "-c" || option == "--config") {
-			assert_argument(argv, argc, i);
-			o_config = argv[i + 1];
 			i++;
 		} else if (option == "-u" || option == "--upgrade") {
 			o_upgrade = true;
@@ -76,7 +71,7 @@ void pkgadd::run(int argc, char** argv)
 		db_open(o_root);
 
 		pair<string, pkginfo_t> package = pkg_open(o_package);
-		vector<rule_t> config_rules = read_config(o_config);
+		vector<rule_t> config_rules = read_config();
 
 		bool installed = db_find_pkg(package.first);
 		if (installed && !o_upgrade)
@@ -125,21 +120,18 @@ void pkgadd::print_help() const
 {
 	cout << "usage: " << utilname << " [options] <file>" << endl
 	     << "options:" << endl
-	     << "  -u, --upgrade        upgrade package with the same name" << endl
-	     << "  -f, --force          force install, overwrite conflicting files" << endl
-	     << "  -r, --root <path>    specify alternative installation root" << endl
-	     << "  -c, --config <file>  use alternate configuration file" << endl 
-	     << "  -v, --version        print version and exit" << endl
-	     << "  -h, --help           print help and exit" << endl;
+	     << "  -u, --upgrade       upgrade package with the same name" << endl
+	     << "  -f, --force         force install, overwrite conflicting files" << endl
+	     << "  -r, --root <path>   specify alternative installation root" << endl
+	     << "  -v, --version       print version and exit" << endl
+	     << "  -h, --help          print help and exit" << endl;
 }
 
-vector<rule_t> pkgadd::read_config(string file) const
+vector<rule_t> pkgadd::read_config() const
 {
 	vector<rule_t> rules;
 	unsigned int linecount = 0;
-	string filename = root + PKGADD_CONF;
-
-	if (!file.empty()) filename = file;
+	const string filename = root + PKGADD_CONF;
 	ifstream in(filename.c_str());
 
 	if (in) {
