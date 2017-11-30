@@ -25,7 +25,7 @@ BINDIR = /usr/bin
 MANDIR = /usr/share/man
 ETCDIR = /etc
 
-VERSION = 5.40.5
+VERSION = 5.40.6
 NAME = pkgutils-$(VERSION)
 
 CXXFLAGS += -DNDEBUG
