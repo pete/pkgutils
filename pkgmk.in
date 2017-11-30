@@ -125,7 +125,7 @@ download_file() {
 			;;
 		wget)
 			RESUME_CMD="-c"
-			DOWNLOAD_OPTS="--passive-ftp --no-directories --tries=3 --waitretry=3 \
+			DOWNLOAD_OPTS="--compression=none --passive-ftp --no-directories --tries=3 --waitretry=3 \
 			--directory-prefix=$PKGMK_SOURCE_DIR \
 			--output-document=$LOCAL_FILENAME_PARTIAL $PKGMK_WGET_OPTS"
 			;;
