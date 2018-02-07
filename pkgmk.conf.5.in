@@ -84,7 +84,7 @@ If set to 'no', pkgmk will strip built binaries.
 Default: 'no'
 .TP
 \fBPKGMK_COMPRESSION_MODE='STRING'\fP
-Option to select the mode used to compress the packages. Valid strings are gz, bz2 and xz.
+Option to select the mode used to compress the packages. Valid strings are gz, bz2, xz and lz.
 .br
 Default: 'gz'
 .SH SEE ALSO

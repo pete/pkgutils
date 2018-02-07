@@ -549,8 +549,8 @@ build_package() {
 
 		case $PKGMK_COMPRESSION_MODE in
 			gz)  COMPRESSION="-z" ;;
-			bz2) COMPRESSION="-j" ;;
 			xz)  COMPRESSION="-J" ;;
+			lz)  COMPRESSION="--lzip" ;;
 		esac
 		bsdtar -c $COMPRESSION -f $TARGET *  &&  bsdtar -t -v -f $TARGET
 
@@ -820,7 +820,7 @@ main() {
 	check_pkgfile
 
 	case $PKGMK_COMPRESSION_MODE in
-		gz|bz2|xz)
+		gz|xz|lz)
 			TARGET="$PKGMK_PACKAGE_DIR/$name#$version-$release.pkg.tar.$PKGMK_COMPRESSION_MODE"
 			;;
 		*)
