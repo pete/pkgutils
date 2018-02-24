@@ -409,7 +409,8 @@ refresh_signature() {
 }
 
 strip_files() {
-	local FILE FILTER
+	local FILTER
+	local N=$(nproc)
 
 	cd $PKG
 
@@ -419,18 +420,18 @@ strip_files() {
 		FILTER="cat"
 	fi
 
-	find . -type f -printf "%P\n" | $FILTER | while read FILE; do
-		case $(file -b "$FILE") in
-		*ELF*executable*not\ stripped*)
-			strip --strip-all "$FILE"
-			;;
-		*ELF*shared\ object*not\ stripped*)
-			strip --strip-unneeded "$FILE"
-			;;
-		current\ ar\ archive)
-			strip --strip-debug "$FILE"
-		esac
-	done
+	find . -type f -printf "%P\n" | $FILTER                   \
+		| xargs -r -L10 -P$N                              \
+			file --no-buffer --separator '>'          \
+			-e apptype -e ascii -e encoding -e tokens \
+			-e cdf -e compress -e tar -e text         \
+		| awk '
+			BEGIN { FS = ">[ ]+" }
+			$0 ~ /ELF.*executable.*not stripped/    { print "--strip-all      \"" $1 "\"" }
+			$0 ~ /ELF.*shared object.*not stripped/ { print "--strip-unneeded \"" $1 "\"" }
+			$2 == "current ar archive"              { print "--strip-debug    \"" $1 "\"" }
+			' \
+		| xargs -r -L1 -P$N strip
 }
 
 compress_manpages() {
