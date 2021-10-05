@@ -38,7 +38,7 @@ LDFLAGS += -static $(LIBARCHIVELIBS)
 
 OBJECTS = main.o pkgutil.o pkgadd.o pkgrm.o pkginfo.o
 
-MANPAGES = pkgadd.8 pkgrm.8 pkginfo.8 pkgmk.8 rejmerge.8 pkgmk.conf.5
+MANPAGES = pkgadd.8 pkgrm.8 pkginfo.8 pkgmk.8 rejmerge.8 pkgmk.conf.5 pkgfile.5
 
 all: pkgadd pkgmk rejmerge man
 
@@ -88,6 +88,7 @@ install: all
 	install -D -m0644 pkgmk.8 $(DESTDIR)$(MANDIR)/man8/pkgmk.8
 	install -D -m0644 rejmerge.8 $(DESTDIR)$(MANDIR)/man8/rejmerge.8
 	install -D -m0644 pkgmk.conf.5 $(DESTDIR)$(MANDIR)/man5/pkgmk.conf.5
+	install -D -m0644 pkgfile.5 $(DESTDIR)$(MANDIR)/man5/pkgfile.5
 	ln -sf pkgadd $(DESTDIR)$(BINDIR)/pkgrm
 	ln -sf pkgadd $(DESTDIR)$(BINDIR)/pkginfo
 
