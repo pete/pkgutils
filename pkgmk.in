@@ -329,9 +329,9 @@ check_signature() {
 		done
 
 		if [ "$PKGMK_PUBLICKEY" ]; then
-			err=$(signify -q -C -p "$PKGMK_PUBLICKEY" -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
+			err=$($PKGMK_SIGNIFY -q -C -p "$PKGMK_PUBLICKEY" -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
 		else
-			err=$(signify -q -C -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
+			err=$($PKGMK_SIGNIFY -q -C -x "$PKGMK_ROOT/$PKGMK_SIGNATURE" 2>&1)
 		fi
 
 		RESULT=$?
@@ -412,7 +412,7 @@ make_signature() {
 	fi
 
 	sha256sum --tag $LOCAL_FILENAMES | sed 's|^SHA256 (.*/\(.*\))\(.* = .*\)|SHA256 (\1)\2|' | \
-	signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
+	$PKGMK_SIGNIFY -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
 
 	if [ $? -ne 0 ]; then
 		rm ${PKGMK_SIGNATURE}.tmp
@@ -435,7 +435,7 @@ refresh_signature() {
 	fi
 
 	tail -n +3 ${PKGMK_SIGNATURE} | \
-	signify -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
+	$PKGMK_SIGNIFY -S -e -x - -q -s "$PKGMK_PRIVATEKEY" -m - > ${PKGMK_SIGNATURE}.tmp
 
 	if [ $? -ne 0 ]; then
 		rm ${PKGMK_SIGNATURE}.tmp
@@ -964,6 +964,7 @@ export LC_ALL=POSIX
 readonly PKGMK_VERSION="#VERSION#"
 readonly PKGMK_COMMAND="$0"
 readonly PKGMK_ROOT="$PWD"
+readonly PKGMK_SIGNIFY="/usr/bin/signify"
 
 PKGMK_CONFFILE="/etc/pkgmk.conf"
 PKGMK_PKGFILE="Pkgfile"
