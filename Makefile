@@ -2,7 +2,7 @@
 #  pkgutils
 #
 #  Copyright (c) 2000-2005 by Per Liden <per@fukt.bth.se>
-#  Copyright (c) 2006-2017 by CRUX team (http://crux.nu)
+#  Copyright (c) 2006-2021 by CRUX team (http://crux.nu)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
