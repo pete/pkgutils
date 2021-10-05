@@ -1,0 +1,266 @@
+.\" 
+.\" Pkgfile manual page.
+.\" (C) 2018 by Fun, updated 2021 by John McQuah <jmcquah at disroot dot org>
+.\"
+.TH Pkgfile 5 "" "pkgutils #VERSION#" ""
+.SH NAME
+Pkgfile \- sourced by \fBpkgmk\fP(8) when building a package in the ports tree
+.SH DESCRIPTION
+a \fBbash\fP(1) script that tells \fBpkgmk\fP(8) where the source code for a port may be downloaded,
+and what to do once that source code is unpacked.
+.SH FILE FORMAT
+\fBPkgfile\fP starts with a header of commented lines, which are read by \fBprt-get\fP(8) 
+to resolve dependencies, or by \fBportspage\fP(1) to generate an HTML index of the ports collection.
+After the header \fBpkgmk\fP will expect to find definitions of several mandatory variables, including
+\fIname\fP, \fIversion\fP, \fIrelease\fP, the bash array \fIsource\fP, and 
+the bash function \fIbuild()\fP.
+.SS Example:
+.EX
+# Description: A library for demonstrating how to create delicious ports.
+# URL:         http://www.gnu.org/software/somelib/index.html
+# Maintainer:  Joe Maintainer, joe at myfantasticisp dot net
+# Depends on:  someotherlib coolness
+
+name=somelib
+version=1.2.3
+release=1
+source=(ftp://ftp.gnu.org/gnu/$name/archive/$version/$version.tar.gz Makefile.in.patch)
+renames=($name-$version.tar.gz SKIP)
+
+build() {
+	cd $name-$version
+	patch -p1 < ../Makefile.in.patch
+	./configure --prefix=/usr
+	make
+	make DESTDIR=$PKG install
+	rm -rf $PKG/usr/info
+}
+.EE
+
+.SS General guidelines
+The name of a package should always be lowercase (e.g. \fBname=eterm\fP and
+not \fBname=Eterm\fP). In case the package is added to the CRUX ports system
+the exact same name should be used for the name of the directory in the
+ports structure, i.e. \fI/usr/ports/???/eterm\fP.
+.LP
+Do not combine several separately distributed programs/libraries into
+one package. Make several packages instead.
+.LP
+Use \fBprtverify\fP to check the port.
+
+.SS Variable names
+.LP
+Do not add new variables to the \fBPkgfile\fP. Only in very few cases
+does this actually improve the readability or the quality of the
+package. Further, the only variables that are guaranteed to work with
+future versions of \fBpkgmk\fP are \fIname\fP, \fIversion\fP, \fIrelease\fP,
+and \fIsource\fP. Other names could be in conflict with internal variables
+in \fBpkgmk\fP.
+.LP
+Use the \fI$name\fP and \fI$version\fP variables to make the
+package easier to update/maintain. For example,
+
+.EX
+	source=(http://xyz.org/$name-$version.tar.gz)
+.EE
+
+is better than
+
+.EX
+	source=(http://xyz.org/myprog-1.0.3.tar.gz)
+.EE
+
+since the URL will automatically update when you modify the \fI$version\fP variable.
+
+.SS Support for renaming source files
+Note that in the \fBsomelib\fP example above, Joe Maintainer chose to define the optional bash array
+\fIrenames\fP (same length as \fIsource\fP), so that the ambiguously-named file retrieved by FTP 
+would not collide with another port's files, if downloaded into a common directory.
+The keyword \(oqSKIP\(cq was given in the \fIrenames\fP array to indicate that renaming was not
+necessary for the corresponding source file. SKIP should always be used for a file retrieved by
+\(oqports -u\(cq, because the port maintainer has the freedom to choose an unambiguous name in the
+\fisource\fP array itself.
+.PP
+Tools from prior versions of CRUX, ignorant of the \fIrenames\fP array, will
+execute the \fIbuild\fP function using the original filenames given by the remote sources.
+For maximum compatibility, nothing in your \fIbuild\fP function should rely on the specific names
+you choose for the downloaded tarballs (their contents will be unpacked into identically-named
+work directories anyway, assuming you do not take the liberty of redefining \fIunpack_source()\fP in your
+Pkgfile). But because earlier CRUX tools also have to be instructed to disregard md5 and signature
+mismatches, port creators should avoid the renaming feature unless absolutely necessary.
+
+.SS Directories
+In general packages should install files in these directories. Exceptions
+are of course allowed if there is a good reason. But try to follow the
+following directory structure as closely as possible.
+
+.EX
+Directory           Description
+---------           ------------
+/usr/bin/           User command/application binaries
+/usr/sbin/          System binaries (e.g. daemons)
+/usr/lib/           Libraries
+/usr/include/       Header files
+/usr/lib/<prog>/    Plug-ins, addons, etc
+/usr/share/man/     Man pages
+/usr/share/<prog>/  Data files
+/usr/etc/<prog>/    Configuration files
+/etc/               Configuration files for system software (daemons, etc)
+.EE
+.LP
+\fI/opt\fP directory is reserved for manually compiled/installed
+applications. Packages should never place anything there.
+.LP
+\fI/usr/libexec/\fP is not used in CRUX, thus packages should never
+install anything there. Use \fI/usr/lib/<prog>/\fP instead.
+
+.SS Junk files
+.LP
+Packages should not contain "junk files". This includes:
+.IP \[bu] 2
+info pages and other online documentation, man pages excluded (e.g. \fIusr/doc/*\fP,
+\fIREADME\fP, \fI*.info\fP, \fI*.html\fP, etc).
+.IP \[bu]
+Files related to NLS (national language support). If \fB--disable-nls\fP is not available as
+an option to \fBconfigure\fP, then manually inserting \(oqrm -rf $PKG/usr/share/locale\(cq near the
+end of the \fBbuild\fP function is an acceptable alternative.
+.IP \[bu]
+Useless or obsolete binaries (e.g. \fI/usr/games/banner\fP and \fI/sbin/mkfs.minix\fP). 
+.LP
+Apart from these global rules, the definition of "junk" is often a matter of personal taste.
+One user might regard as "junk" the same files that another user sees as indispensible. See
+\fBOptional dependencies\fP below for a simple way to let your port handle such
+individual preferences automatically.
+
+.SS Header
+
+Provide a header including the following fields:
+
+.EX
+Name            Meaning
+----            -------
+Description     A short description of the package; keep it factual
+Maintainer      Your full name and e-mail address, obfuscated if you want
+Packager        The original packager's full name and e-mail address
+URL             A webpage with more information on this software package
+Depends on      A list of dependencies, separated either by spaces or commas
+.EE
+
+Note that you should use the obfuscated email address (illustrated in the example above) if
+you want to put your ports in any of the official CRUX repositories.
+
+\fIDepends on\fP can be omitted if there are no dependencies.
+
+.SS Dependencies
+
+Dependencies are supported by CRUX tools like \fBprt-get\fP and \fBpkg-get\fP.
+The following rules should be respected:
+
+.IP "" 4
+List all runtime dependencies except for gcc (libstdc++) and glibc.
+.IP "" 4
+\fBcore\fP contains essential packages for a CRUX system, and our scripts
+and ports expect the programs provided by \fBcore\fP to be installed; this
+means that:
+.IP "" 8
+build dependencies provided by \fBcore\fP are not listed in the dependency header
+.IP "" 8
+run-time dependencies from \fBcore\fP which aren't dynamically linked in are not to be listed, either 
+.TP
+Examples:
+.IP "" 4
+\fBopt/sloccount\fP does \fInot\fP list \fBperl\fP, because the program is a perl script -- there's no binary that links to \fBlibperl\fP
+.IP "" 4
+\fBopt/libxml2\fP \fIdoes\fP list \fBzlib\fP, because \fBlibxml\fP is linked to \fBlibz\fP. 
+.LP
+The reasoning for these guidelines is that you can use \fBrevdep\fP to find ports
+that need to be updated if one of the dependent libraries has become
+binary incompatible. To find out what libraries a binary is linked to,
+use \fBldd\fP or \fBfinddeps\fP.
+.LP
+It \fIis\fP permissible to list build dependencies outside of \fBcore\fP, whose only purpose is to
+generate the manpage of the port. But if the dependency chain is too convoluted, try to find
+alternative ways of providing such static documentation.
+.TP
+Examples:
+.IP "" 4
+\fBgreetd\fP \fIdoes\fP list \fBscdoc\fP (only needed to generate the manpages), because the dependency chain
+leading to this dependency is just \fBscdoc\fP itself.
+.IP "" 4
+\fBmpd\fP does \fInot\fP list \fBpython3-sphinx\fP (only needed to generate the manpages), because of the
+long dependency chain leading to \fBpython3-sphinx\fP, and the possibility of delivering the manpages by
+simpler means.
+
+.SS Optional dependencies
+
+A common practice among port maintainers is to put filesystem tests in the \fIbuild\fP function,
+allowing the package configuration to vary depending on what other packages the system administrator 
+has installed. This practice can result in footprint mismatches. It is recommended that 
+maintainers build their ports in a container with the bare minimum of dependencies, or prune the
+auto-generated footprint so that the spurious files are not reported as MISSING on another user's
+system.
+.PP
+Filesystem tests are also useful at the end of a \fIbuild\fP function, for example when determining
+which shell completions should be installed. Here is a template for tests of this kind:
+.EX
+  prt-get isinst bash-completion || rm -rf $PKG/usr/share/bash-completion
+  prt-get isinst zsh || rm -rf $PKG/usr/share/zsh
+  prt-get isinst fish || rm -rf $PKG/usr/share/fish
+.EE
+.PP
+If the maintainer built the package in a clean container, then another user with fish installed will
+see the path /usr/share/fish listed as NEW in the footprint mismatch, and that user can proceed with
+installation if PKGMK_IGNORE_NEW was enabled in \fBpkgmk.conf\fP(5). More dangerous is the reverse
+situation: the maintainer built the package in a system with fish, and a user without fish sees
+/usr/share/fish listed as MISSING in the footprint mismatch. Users should not be encouraged to disregard
+MISSING, but enabling PKGMK_IGNORE_NEW is generally safe.
+
+.SS rc start scripts
+
+You can use the following template for ports that provide some
+sort of daemon. The runnable script should be called \fI$name.rc\fP,
+and your port should install it to \fI/etc/rc.d/$name\fP. The installation
+can happen by calling the following in your \fIbuild\fP function:
+
+.EX
+    install -D -m 755 $SRC/$name.rc $PKG/etc/rc.d/$name
+.EE
+.LP
+See the existing scripts under /etc/rc.d for examples of using \fBstart-stop-daemon\fP(8)
+to generate the necessary pid files, temp directories, and logs for your daemon.
+
+.SH ENVIRONMENT
+.LP
+The \fIbuild\fP function should use the \fI$SRC\fP variable whenever it needs
+to access the files listed in the source variable, and the \fI$PKG\fP
+variable as the root destination of the output files.
+.LP
+Being a shell script executed in the context of \fBpkgmk\fP(8), the
+entire \fBPkgfile\fP has access to the variables initialized
+in \fBpkgmk.conf\fP(5) and the default values set by \fBpkgmk\fP(8). Also, as a
+side effect of how it is used by \fBpkgmk\fP(8), the Pkgfile can also
+change the behaviour of \fBpkgmk\fP(8) by rewriting some of its functions
+and variables before \fIbuild()\fP is called. However, the \fIbuild\fP
+function itself has only read access to these environment variables
+and shell functions.
+.SH ERRORS
+.LP
+Most of the command failures in \fIbuild()\fP will stop
+the build process. There is no need to explicitly check the return
+codes. If you need/want to handle a command failure you should use
+constructs like:
+
+.EX
+	\fBif ! command...; then ...\fP
+	\fBcommand || ...\fP
+.EE
+.SH SEE ALSO
+pkgmk(8), pkgmk.conf(5),
+.UR https://crux.nu/Main/PortGuidelines
+.UE ,
+.UR https://crux.nu/Main/PrePostInstallGuidelines
+.UE .
+.SH COPYRIGHT
+pkgmk (pkgutils) is Copyright (c) 2000-2005 Per Liden and Copyright (c) 2006-2021 CRUX team (http://crux.nu).
+pkgmk (pkgutils) is licensed through the GNU General Public License.
+Read the COPYING file for the complete license.
