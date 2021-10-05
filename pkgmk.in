@@ -171,36 +171,47 @@ download_file() {
 }
 
 download_source() {
-	local FILE LOCAL_FILENAME
+	local RENAME LOCAL_FILE ORIG_FILE srcind
 
-	for FILE in ${source[@]}; do
-		LOCAL_FILENAME=`get_filename $FILE`
-		if [ ! -e $LOCAL_FILENAME ]; then
-			if [ "$LOCAL_FILENAME" = "$FILE" ]; then
-				error "Source file '$LOCAL_FILENAME' not found (can not be downloaded, URL not specified)."
+	srcind=0
+	while [ $srcind -lt ${#source[@]} ]; do
+		ORIG_FILE=`get_filename "${source[$srcind]}"`
+		LOCAL_FILE=$ORIG_FILE
+		RENAME="${renames[$srcind]}"
+		[ -n "$RENAME" -a "$RENAME" != "SKIP" ] && LOCAL_FILE="$PKGMK_SOURCE_DIR/$RENAME"
+		if [ ! -e $LOCAL_FILE ]; then
+			if [ "$ORIG_FILE" = "${source[$srcind]}" ]; then
+				error "Source file '$LOCAL_FILE' not found (can not be downloaded, URL not specified)."
 				exit $E_DOWNLOAD
 			else
 				if [ "$PKGMK_DOWNLOAD" = "yes" ]; then
-					download_file $FILE
+					download_file "${source[$srcind]}"
+					[ "$LOCAL_FILE" = "$ORIG_FILE" ] || mv $ORIG_FILE $LOCAL_FILE
+
 				else
-					error "Source file '$LOCAL_FILENAME' not found (use option -d to download)."
+					error "Source file '$LOCAL_FILE' not found (use option -d to download)."
 					exit $E_DOWNLOAD
 				fi
 			fi
 		fi
+		srcind=$(( srcind+1 ))
 	done
 }
 
 unpack_source() {
-	local FILE LOCAL_FILENAME COMMAND
+	local ORIG_FILE RENAME LOCAL_FILE srcind COMMAND
 
-	for FILE in ${source[@]}; do
-		LOCAL_FILENAME=`get_filename $FILE`
-		case $LOCAL_FILENAME in
+	srcind=0
+	while [ $srcind -lt ${#source[@]} ]; do
+		ORIG_FILE=`get_filename ${source[$srcind]}`
+		LOCAL_FILE=$ORIG_FILE
+		RENAME="${renames[$srcind]}"
+		[ -n "$RENAME" -a "$RENAME" != "SKIP" ] && LOCAL_FILE="$PKGMK_SOURCE_DIR/$RENAME"
+		case $LOCAL_FILE in
 			*.tar|*.tar.gz|*.tar.Z|*.tgz|*.tar.bz2|*.tbz2|*.tar.xz|*.txz|*.tar.lzma|*.tar.lz|*.zip|*.rpm|*.7z)
-				COMMAND="bsdtar -p -o -C $SRC -xf $LOCAL_FILENAME" ;;
+				COMMAND="bsdtar -p -o -C $SRC -xf $LOCAL_FILE" ;;
 			*)
-				COMMAND="cp $LOCAL_FILENAME $SRC" ;;
+				COMMAND="cp $LOCAL_FILE $SRC" ;;
 		esac
 
 		echo "$COMMAND"
@@ -214,15 +225,25 @@ unpack_source() {
 			error "Building '$TARGET' failed."
 			exit $E_UNPACK
 		fi
+		srcind=$(( srcind+1 ))
 	done
 }
 
 make_md5sum() {
-	local FILE LOCAL_FILENAMES
+	local srcind FILE LOCAL_FILENAMES
 
 	if [ "$source" ]; then
-		for FILE in ${source[@]}; do
+		srcind=0
+		while [ $srcind -lt ${#source[@]} ]; do
+			FILE="${source[$srcind]}"
+			if [ -n "${renames[$srcind]}" -a "${renames[$srcind]}" != "SKIP" ]; then
+			LOCAL_FILENAMES="$LOCAL_FILENAMES $PKGMK_SOURCE_DIR/${renames[$srcind]}"
+			elif [ "`get_basename $FILE`" = "$FILE" ]; then
+			LOCAL_FILENAMES="$LOCAL_FILENAMES $FILE"
+			else
 			LOCAL_FILENAMES="$LOCAL_FILENAMES `get_filename $FILE`"
+			fi
+			srcind=$(( srcind+1 ))
 		done
 
 		md5sum $LOCAL_FILENAMES | sed -e 's|  .*/|  |' | sort -k 2
@@ -294,7 +315,16 @@ check_signature() {
 
 	if [ -f $PKGMK_ROOT/$PKGMK_SIGNATURE ]; then
 		cd $SRC
-		for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
+		local srcind=0
+
+		while [ $srcind -lt ${#source[@]} ]; do
+		if [ -n "${renames[$srcind]}" -a "${renames[$srcind]}" != "SKIP" ]; then
+			source[$srcind]="http://somehost/${renames[$srcind]}"
+		fi
+		srcind=$(( srcind+1 ))
+		done
+
+		for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" "${source[@]}"; do
 			ln -s $(get_filename -a $FILE) .
 		done
 
@@ -359,7 +389,15 @@ make_signature() {
 	local FILE LOCAL_FILENAMES
 	local REPO
 
-	for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" ${source[@]}; do
+	local srcind=0
+	while [ $srcind -lt ${#source[@]} ]; do
+		if [ -n "${renames[$srcind]}" -a "${renames[$srcind]}" != "SKIP" ]; then
+			source[$srcind]="http://somehost/${renames[$srcind]}"
+		fi
+		srcind=$(( srcind+1 ))
+	done
+
+	for FILE in "$PKGMK_PKGFILE" "$PKGMK_FOOTPRINT" "${source[@]}"; do
 		LOCAL_FILENAMES="$LOCAL_FILENAMES `get_filename $FILE`"
 	done
 
@@ -621,19 +659,26 @@ recursive() {
 }
 
 clean() {
-	local FILE LOCAL_FILENAME
+	local ORIG_FILE LOCAL_FILE srcind
 
 	if [ -f $TARGET ]; then
 		info "Removing $TARGET"
 		rm -f $TARGET
 	fi
 
-	for FILE in ${source[@]}; do
-		LOCAL_FILENAME=`get_filename $FILE`
-		if [ -e $LOCAL_FILENAME ] && [ "$LOCAL_FILENAME" != "$FILE" ]; then
-			info "Removing $LOCAL_FILENAME"
-			rm -f $LOCAL_FILENAME
+	srcind=0
+	while [ $srcind -lt ${#source[@]} ]; do
+		ORIG_FILE="${source[$srcind]}"
+		LOCAL_FILE=`get_filename "$ORIG_FILE"`
+		RENAME="${renames[$srcind]}"
+		if [ -n "$RENAME" -a "$RENAME" != "SKIP" ]; then
+			LOCAL_FILE="$PKGMK_SOURCE_DIR/$RENAME"
 		fi
+		if [ -e $LOCAL_FILE ] && [ "$LOCAL_FILE" != "$ORIG_FILE" ]; then
+			info "Removing $LOCAL_FILE"
+			rm -f $LOCAL_FILE
+		fi
+		srcind=$(( srcind+1 ))
 	done
 }
 
@@ -651,18 +696,30 @@ update_footprint() {
 }
 
 build_needed() {
-	local FILE RESULT
+	local ORIG_FILE RENAME LOCAL_FILE srcind RESULT
 
 	RESULT="yes"
 	if [ -f $TARGET ]; then
 		RESULT="no"
-		for FILE in $PKGMK_PKGFILE ${source[@]}; do
-			FILE=`get_filename $FILE`
-			if [ -e $FILE ] && [ ! $TARGET -nt $FILE ]; then
+		srcind=0
+
+		while [ $srcind -lt ${#source[@]} ]; do
+			ORIG_FILE=`get_filename "${source[$srcind]}"`
+			LOCAL_FILE=$ORIG_FILE
+			RENAME="${renames[$srcind]}"
+			if [ -n "$RENAME" -a "$RENAME" != "SKIP" ]; then
+				LOCAL_FILE="$PKGMK_SOURCE_DIR/$RENAME"
+			fi
+			if [ -e $LOCAL_FILE ] && [ ! $TARGET -nt $LOCAL_FILE ]; then
 				RESULT="yes"
 				break
 			fi
+			srcind=$(( srcind+1 ))
 		done
+
+		if [ -e $PKGMK_PKGFILE ] && [ ! $TARGET -nt $PKGMK_PKGFILE ]; then
+			RESULT="yes"
+		fi
 	fi
 
 	echo $RESULT
