@@ -108,7 +108,7 @@ check_file() {
 download_file() {
 	info "Downloading '$1'."
 
-	PKGMK_DOWNLOAD_PROG=${PKGMK_DOWNLOAD_PROG:-wget}
+	PKGMK_DOWNLOAD_PROG=${PKGMK_DOWNLOAD_PROG:-curl}
 	if [ ! "`type -p ${PKGMK_DOWNLOAD_PROG}`" ]; then
 		error "Command '${PKGMK_DOWNLOAD_PROG}' not found."
 		exit $E_GENERAL

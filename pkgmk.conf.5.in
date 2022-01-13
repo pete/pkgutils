@@ -52,7 +52,7 @@ Default: '\fBfoo\fP/work', where \fBfoo\fP is the directory of the Pkgfile.
 \fBPKGMK_DOWNLOAD_PROG='STRING'\fP
 Use specified program to download source archives. Valid strings are curl and wget.
 .br
-Default: 'wget'
+Default: 'curl'
 .br
 .TP
 \fBPKGMK_CURL_OPTS='STRING'\fP
