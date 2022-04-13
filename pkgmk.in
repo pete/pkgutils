@@ -592,7 +592,7 @@ build_package() {
 			xz)  COMPRESSION="-J" ;;
 			lz)  COMPRESSION="--lzip" ;;
 		esac
-		bsdtar -c $COMPRESSION -f $TARGET *  &&  bsdtar -t -v -f $TARGET
+		bsdtar --format=gnutar -c $COMPRESSION -f $TARGET *  &&  bsdtar -t -v -f $TARGET
 
 		if [ $? = 0 ]; then
 			BUILD_SUCCESSFUL="yes"
