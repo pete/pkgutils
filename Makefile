@@ -25,7 +25,7 @@ BINDIR = /usr/bin
 MANDIR = /usr/share/man
 ETCDIR = /etc
 
-VERSION = 5.40.8
+VERSION = 5.40.9
 NAME = pkgutils-$(VERSION)
 
 CXXFLAGS += -DNDEBUG
@@ -69,7 +69,7 @@ endif
 .PHONY:	install clean distclean dist
 
 dist: distclean
-	rm -rf $(NAME) $(NAME).tar.gz
+	rm -rf $(NAME) $(NAME).tar.xz
 	git archive --format=tar --prefix=$(NAME)/ HEAD | tar -x
 	git log > $(NAME)/ChangeLog
 	tar cJvf $(NAME).tar.xz $(NAME)
