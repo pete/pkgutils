@@ -514,7 +514,7 @@ check_footprint() {
 				sed 's/^-/MISSING   /g' > $FILE.footprint.diff
 			if [ -s $FILE.footprint.diff ]; then
 				if [ "$PKGMK_IGNORE_NEW" = "yes" ] && \
-				   [ -z "$(egrep -l ^MISSING $FILE.footprint.diff)" ] ; then
+					[ -z "$(grep -El ^MISSING $FILE.footprint.diff)" ] ; then
 					info "New files found:"
 				else
 					error "Footprint mismatch found:"
