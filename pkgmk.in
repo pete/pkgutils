@@ -209,7 +209,7 @@ unpack_source() {
 		[ -n "$RENAME" -a "$RENAME" != "SKIP" ] && LOCAL_FILE="$PKGMK_SOURCE_DIR/$RENAME"
 		case $LOCAL_FILE in
 			*.tar|*.tar.gz|*.tar.Z|*.tgz|*.tar.bz2|*.tbz2|*.tar.xz|*.txz|*.tar.lzma|*.tar.lz|*.zip|*.rpm|*.7z)
-				COMMAND="bsdtar -p -o -C $SRC -xf $LOCAL_FILE" ;;
+				COMMAND="bsdtar -p --no-acls --no-xattrs --no-mac-metadata --no-fflags -o -C $SRC -xf $LOCAL_FILE" ;;
 			*)
 				COMMAND="cp $LOCAL_FILE $SRC" ;;
 		esac
